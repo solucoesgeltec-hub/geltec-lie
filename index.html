@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#0f2744">
 <title>Geltec Soluções – Laudos de Instalações Elétricas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
@@ -511,34 +512,77 @@
   <!-- TELA DE LOGIN -->
   <div id="login-screen" style="
     position:fixed;inset:0;z-index:9999;
-    background:var(--navy);
+    background:#ffffff;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     padding:24px;
   ">
-    <img id="login-logo" src="" alt="Geltec" style="height:56px;margin-bottom:28px">
-    <div style="background:white;border-radius:16px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
-      <h2 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px;text-align:center">Laudos de Instalações Elétricas</h2>
-      <p style="font-size:12px;color:var(--gray400);text-align:center;margin-bottom:20px">Geltec Soluções</p>
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;font-weight:600;color:var(--gray600);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">E-mail</label>
+    <!-- Logo em texto, sem imagem -->
+    <div style="margin-bottom:36px;text-align:center">
+      <div style="display:inline-flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;background:var(--navy);border-radius:8px;
+          display:flex;align-items:center;justify-content:center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M13 3L4 14h8l-1 7 9-11h-8l1-10z" fill="#e63946" stroke="white" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:22px;font-weight:800;color:var(--navy);letter-spacing:-.5px;line-height:1">Geltec</div>
+          <div style="font-size:11px;font-weight:600;color:var(--gray400);letter-spacing:1px;text-transform:uppercase">Soluções</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card de login -->
+    <div style="width:100%;max-width:400px">
+      <h2 style="font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px;text-align:center">
+        Laudos de Instalações Elétricas
+      </h2>
+      <p style="font-size:13px;color:var(--gray400);text-align:center;margin-bottom:32px">
+        Geltec Soluções
+      </p>
+
+      <!-- Campo E-mail -->
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;
+          letter-spacing:.6px;display:block;margin-bottom:6px">E-mail</label>
         <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"
           onkeydown="if(event.key==='Enter')document.getElementById('login-senha').focus()"
-          style="width:100%;border:1.5px solid var(--gray200);border-radius:8px;padding:12px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box">
+          style="width:100%;border:2px solid var(--blue);border-radius:10px;padding:14px 16px;
+            font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;
+            color:var(--navy);background:#f8fbff;transition:border-color .15s"
+          onfocus="this.style.borderColor='var(--blue-l)';this.style.background='white'"
+          onblur="this.style.borderColor='var(--blue)';this.style.background='#f8fbff'">
       </div>
-      <div style="margin-bottom:20px">
-        <label style="font-size:11px;font-weight:600;color:var(--gray600);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Senha</label>
+
+      <!-- Campo Senha -->
+      <div style="margin-bottom:24px">
+        <label style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;
+          letter-spacing:.6px;display:block;margin-bottom:6px">Senha</label>
         <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password"
           onkeydown="if(event.key==='Enter')fazerLogin()"
-          style="width:100%;border:1.5px solid var(--gray200);border-radius:8px;padding:12px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box">
+          style="width:100%;border:2px solid var(--blue);border-radius:10px;padding:14px 16px;
+            font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;
+            color:var(--navy);background:#f8fbff;transition:border-color .15s"
+          onfocus="this.style.borderColor='var(--blue-l)';this.style.background='white'"
+          onblur="this.style.borderColor='var(--blue)';this.style.background='#f8fbff'">
       </div>
-      <div id="login-erro" style="display:none;background:var(--nc-bg);color:var(--nc);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px"></div>
+
+      <!-- Erro -->
+      <div id="login-erro" style="display:none;background:var(--nc-bg);color:var(--nc);
+        border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;
+        border:1px solid rgba(220,38,38,.2)"></div>
+
+      <!-- Botão -->
       <button id="login-btn" onclick="fazerLogin()"
         style="width:100%;background:var(--blue);color:white;border:none;border-radius:10px;
-          padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
-          -webkit-tap-highlight-color:transparent">
+          padding:15px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+          -webkit-tap-highlight-color:transparent;transition:background .15s;letter-spacing:.3px"
+        onmouseover="this.style.background='var(--blue-l)'"
+        onmouseout="this.style.background='var(--blue)'">
         Entrar
       </button>
-      <p style="font-size:11px;color:var(--gray400);text-align:center;margin-top:16px;line-height:1.5">
+
+      <p style="font-size:11px;color:var(--gray400);text-align:center;margin-top:20px;line-height:1.6">
         Acesso restrito — solicite credenciais ao administrador Geltec
       </p>
     </div>
@@ -1134,8 +1178,9 @@ async function fazerLogin() {
     if (!data?.user) { showLoginErro('Erro inesperado. Tente novamente.'); btn.textContent='Entrar'; btn.disabled=false; return; }
     await onLogin(data.user);
   } catch(e) {
-    showLoginErro('Erro de conexão. Verifique sua internet.');
+    showLoginErro('Erro: ' + (e?.message || e?.toString() || 'desconhecido'));
     btn.textContent='Entrar'; btn.disabled=false;
+    console.error('Login error:', e);
   }
 }
 function showLoginErro(msg) { const el=document.getElementById('login-erro'); el.textContent=msg; el.style.display='block'; }
