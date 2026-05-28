@@ -2702,11 +2702,13 @@ async function generatePDF() {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 async function initApp() {
-  // Load from Supabase, fallback to localStorage
+  // Sempre carrega do Supabase — fonte da verdade compartilhada entre dispositivos
   try {
     await dbLoadAll();
     state.clients.forEach(c => { c.units.forEach(ensureUnit); });
+    localStorage.setItem('geltec_lie_v2', JSON.stringify(state));
   } catch(e) {
+    console.warn('Supabase indisponível, usando cache local:', e);
     const saved = localStorage.getItem('geltec_lie_v2');
     if (saved) { try { state = JSON.parse(saved); } catch(e2) {} }
     if (!state.clients) state = { clients: [] };
@@ -2874,13 +2876,35 @@ function updateHomeStats() {
 function selectClient(id) { ctx.clientId=id; ctx.groupId=null; ctx.unitId=null; renderUnits(); setLevel(1); }
 function openNewClientModal() { document.getElementById('nc-nome').value=''; document.getElementById('nc-logo-preview').style.display='none'; document.getElementById('modal-client').classList.add('open'); }
 function previewClientLogo(input) { const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ const p=document.getElementById('nc-logo-preview'); p.src=e.target.result; p.style.display='block'; }; r.readAsDataURL(f); }
-function createClient() {
+async function createClient() {
   const name=document.getElementById('nc-nome').value.trim();
   if (!name) { alert('Informe o nome.'); return; }
   const prev=document.getElementById('nc-logo-preview');
   const logo=prev.style.display!=='none'&&prev.src.startsWith('data:')?prev.src:'';
-  state.clients.push({ id:Date.now().toString(), name, logo, groups:[] });
-  saveData(); closeModal('modal-client'); renderClients();
+  const c = { id:Date.now().toString(), name, logo, units:[] };
+  state.clients.push(c);
+  localStorage.setItem('geltec_lie_v2', JSON.stringify(state));
+  if (currentUser) {
+    try {
+      const {error} = await supa.from('clientes').upsert({
+        id: c.id,
+        nome: c.name,
+        logo_url: c.logo||null,
+        criado_por: currentUser.id
+      });
+      if (error) {
+        alert('Erro ao salvar no servidor: ' + error.message);
+        console.error('Supabase error:', error);
+      }
+    } catch(e) {
+      alert('Erro de conexão ao salvar cliente: ' + e.message);
+      console.error('Save error:', e);
+    }
+  }
+  closeModal('modal-client');
+  document.getElementById('nc-nome').value='';
+  document.getElementById('nc-logo-preview').style.display='none';
+  renderClients();
 }
 function deleteClient(id) { if (!confirm('Apagar cliente e todos os dados?')) return; state.clients=state.clients.filter(c=>c.id!==id); saveData(); renderClients(); }
 
@@ -2989,7 +3013,7 @@ function openNewUnitModal() {
   document.getElementById('mu-cnpj').value  = '';
   document.getElementById('modal-unit').classList.add('open');
 }
-function createUnit() {
+async function createUnit() {
   const c=getClient();
   if(!c){alert('Selecione um cliente primeiro.');return;}
   const name=document.getElementById('mu-nome').value.trim();
@@ -3003,7 +3027,14 @@ function createUnit() {
     ident: cnpj ? {cnpj} : {},
     parecer:{},fvData:{}};
   c.units.push(u);
-  saveData();
+  // Salva imediatamente no Supabase
+  localStorage.setItem('geltec_lie_v2', JSON.stringify(state));
+  if (currentUser) {
+    try {
+      await dbSaveCliente(c);
+      await dbSaveUnidade(u, c.id);
+    } catch(e) { console.error('Erro ao salvar unidade:', e); }
+  }
   closeModal('modal-unit');
   renderUnits();
 }
