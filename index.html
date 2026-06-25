@@ -3399,7 +3399,8 @@ async function generatePDF() {
           doc.setDrawColor(...LGRAY); doc.rect(ML+hw, y, hw, 11);
           doc.setTextColor(...DKGRAY); doc.setFontSize(6); doc.setFont('helvetica','bold');
           doc.text((l2||'').toUpperCase(), ML+hw+2, y+3.5);
-          doc.setTextColor(15,23,42); doc.setFontSize(8.5); doc.setFont('helvetica','normal');
+          const c2 = l2 && ['DPS','DR','Circuitos','Terra','Neutro'].some(k=>l2.includes(k)) ? semaforo(q[l2==='Possui DPS'?'dps':l2==='Possui DR'?'dr':l2.includes('Circuito')?'idCirc':l2.includes('Terra')?'barrTerra':'barrNeutro']) : [15,23,42];
+          doc.setTextColor(...c2); doc.setFontSize(8.5); doc.setFont('helvetica','normal');
           doc.text(String(v2||'—').substring(0,28), ML+hw+2, y+8.5);
           y+=11;
         });
@@ -3445,9 +3446,9 @@ async function generatePDF() {
             const dtColor = dt>=35?RED:dt>=15?[192,86,33]:dt>=5?AMBER:GREEN;
             const dtLabel = dt>=35?'CRÍTICO':dt>=15?'GRAVE':dt>=5?'ATENÇÃO':'NORMAL';
             doc.setFillColor(...dtColor);
-            doc.roundedRect(W-MR-36, y+1, 34, 7, 1, 1, 'F');
-            doc.setTextColor(...WHITE); doc.setFontSize(7); doc.setFont('helvetica','bold');
-            doc.text('Var.Temp.: '+dt.toFixed(1)+' C — '+dtLabel, W-MR-38, y+5.8);
+            doc.roundedRect(W-MR-58, y+1, 56, 7, 1, 1, 'F');
+            doc.setTextColor(...WHITE); doc.setFontSize(6.5); doc.setFont('helvetica','bold');
+            doc.text('Var.Temp.: '+dt.toFixed(1)+' C — '+dtLabel, W-MR-56, y+5.8);
           }
           y+=12;
 
@@ -3585,7 +3586,7 @@ async function generatePDF() {
           doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(44,82,130);
           recLinesSplit.forEach(l=>{doc.text(l,ML+9,ly);ly+=5;});
         }
-        y+=boxH+5;
+        y+=boxH+9;
         if((nc.fotos||[]).length){
           let pcol=0; const pW=55,pH=42,pGap=6,pRow=3;
           (nc.fotos).forEach((src,fi)=>{
