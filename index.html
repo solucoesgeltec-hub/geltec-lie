@@ -3192,7 +3192,9 @@ async function generatePDF() {
             if(modeMin && sc===GREEN){
               const nMax=parseFloat(vmax)||n, nMin=parseFloat(vmin)||n;
               if((limOk!==null&&nMax>limOk)||nMin<limWarn){
-                const excTxt=nMax>limOk&&nMin<limWarn?'▲max e ▼min fora da faixa adequada':nMax>limOk?'▲max fora da faixa adequada':'▼min fora da faixa adequada';
+                const _excMax = limOk!==null && nMax>limOk;
+                const _excMin = nMin<limWarn;
+                const excTxt = _excMax&&_excMin ? 'max e min fora da faixa adequada' : _excMax ? 'max fora da faixa adequada' : 'min fora da faixa adequada';
                 doc.setFontSize(5); doc.setTextColor(...AMBER); doc.setFont('helvetica','italic');
                 doc.text(excTxt,cx+3,y+14.5);
               }
@@ -3200,7 +3202,7 @@ async function generatePDF() {
           }
           // Cor do valor: vermelho/âmbar se MAIOR ou MENOR ultrapassou o limite adequado
           let valColor = [15,23,42]; // preto padrão
-          if(modeMin && limOk && !isNaN(n)){
+          if(modeMin && limWarn && !isNaN(n)){
             if(limOk!==null && ci===0 && n>limOk) valColor=AMBER;        // MAIOR acima do adequado
             if(limOk!==null && ci===0 && n>limOk*1.015) valColor=RED;    // MAIOR crítico
             if(ci===1 && n<limWarn) valColor=AMBER;      // MENOR abaixo do adequado
